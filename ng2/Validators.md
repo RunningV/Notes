@@ -77,7 +77,7 @@
 
    这个组件没有定义任何方法，但是你可以看到如下界面：
 
-   ![form-model-tag]( ![form-model-tag](https://github.com/RunningV/Notes/img/form-model-tag.png))
+   ![form-model-tag]( ![form-model-tag](https://github.com/RunningV/Notes/blob/master/img/form-model-tag.png))
 
    样式什么的就没有写，可以看到我输入不合法的内容后提示就会出现，当输入合法内容时提示会隐藏掉。
 
