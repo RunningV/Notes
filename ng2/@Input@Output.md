@@ -87,7 +87,7 @@ export class DataFlow {
 2. 那么子组件如何提交数据变化到父组件呢？这里我们用事件检查的方式提交数据。
     在child标签中还自定义了一个属性：
     ```
-    (dataFromChild)="dataFromChild($event)"
+        (dataFromChild)="dataFromChild($event)"
     ```
     `()`表明数据流出的，此标签的赋值为`dataFromChild($event)`，可以看到在父组件中有定义：
     ```
