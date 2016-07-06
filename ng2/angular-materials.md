@@ -1,3 +1,5 @@
 1. [One framework - Angular2](https://angular.io/)
 2. [Torgeir Helgevold's Articles](http://www.syntaxsuccess.com/articleList/angular)
 3. [thoughtram](http://blog.thoughtram.io/)
+4. [angular unit test](https://developers.livechatinc.com/blog/category/programming/angular-2/)
+5. [awesome-angular2 materials](https://github.com/AngularClass/awesome-angular2)

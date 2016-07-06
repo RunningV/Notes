@@ -1,0 +1,1 @@
+###[Protractor API](http://www.protractortest.org/#/api?view=ElementArrayFinder)
