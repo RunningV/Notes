@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>亿童小助手</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no">
+
+	<!--	<link rel="icon" href="http://public.yitong.com/favicon.ico" mce_href="//public.yitong.com/favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="http://public.yitong.com/favicon.ico" mce_href="//public.yitong.com/favicon.ico" type="image/x-icon">
+    <script src="//public.yitong.com/libs/es6-promise/4.1.1/es6-promise.min.js"></script>
+		<script src="//public.yitong.com/libs/js-cookie/2.1.4/js.cookie.min.js"></script>-->
+		<script src="//public.yitong.com/libs/zepto/1.2.0/zepto.min.js"></script>
+		<script src="./postMessageToRN.js"></script>
+    <style>
+      .btn-box{
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px; 
+      }
+    </style>
+	</head>
+	<body>
+    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores debitis impedit dolores quidem incidunt laborum provident cum expedita illo dignissimos, non, reiciendis accusantium! Corporis aut sit animi modi voluptas blanditiis!</div>
+		<!--引入公共文件库请去：https://cdnjs.com/搜索引入方式是将对应的连接/libs前的部分替换为//public.yitong.com-->
+    <div class="content">
+      <p>tel:<input type="tel" id="tel"></p>
+      <p>cb:<input type="text" id="cb"></p>
+      <p>pro:<input type="text" id="pro"></p>
+      <p>testAlert:<input type="text" id="test"></p>
+      <p>testPro:<input type="text" id="testPro"></p>
+    </div>
+    <div class="btn-box">
+      <button onclick="callPhone44()">拨号</button>
+      <button onclick="callback44()">Callback</button>
+      <button onclick="promise44()">Promise</button>
+      <button onclick="testAlert()">testAlert</button>
+      <button onclick="testPromise()">testPromise</button>
+    </div>
+    <div class="main"></div>
+    <script>
+      function sendMsg(msg) {
+        // var msg = wrapperFuncStr.slice(wrapperFuncStr.indexOf('{') + 1, -2);
+        if(window.originalPostMessage) {
+          window.postMessage(JSON.stringify(msg));
+        } else {
+          throw Error('postMessage接口未注入');
+        }
+      }
+      /*
+      *需求：调用rn的方法
+      *难点：1. 不确定rn是否存在此方法； 2. 不确定rn的方法调用方式：无回调？回调方式？promise方式？
+      *办法：先通过promise的方式调用rn的方法，在rn端统一转为promise的方式执行。
+      *如果执行成功返回promise.resolve(data)，则调用成功
+      *如果执行失败返回promise.reject(err),则调用失败
+      */
+      function callPhone33 () {
+        //Promise.promisify
+        var telphone = document.getElementById('tel').value || '15846484648';
+        var factory = function() {
+          (function() {
+            return function (tel) {
+              new Promise(function(resolve, reject) {
+                  tel = tel || '158478846488';
+                  try{
+                    NativeModules.commModule.rnCallNative(tel)
+                    resolve({data: 'call success'})
+                  } catch(err) {
+                    ToastAndroid.show(404, ToastAndroid.SHORT);
+                    alert(404 + err)
+                    reject(err)
+                  }
+              })
+            }
+          })()
+        }
+        var factoryStr = factory.toString()
+        var context = {
+          method:  factoryStr.slice(factoryStr.indexOf('{') + 1, -1),
+          params: telphone
+        };
+        sendMsg(context);
+      }
+      
+      function callPhone44() {
+        var tel = document.getElementById('tel').value || '15846484648';
+        return new Promise(function(resolve, reject) {
+          var context = RemoteFunction.newContext(
+            function (tel) {
+              return new Promise(function(resolve, reject) {
+                  tel = tel || '158478846488';
+                  try{
+                    NativeModules.commModule.rnCallNative(tel)
+                    resolve({data: 'call success'})
+                  } catch(err) {
+                    ToastAndroid.show(404, ToastAndroid.SHORT);
+                    reject(err)
+                  }
+              })
+            }, [tel]
+          );
+        
+          window.postMessage(JSON.stringify({
+              type: 'remote-function-response',
+              id: context.id,
+              source: context.source,
+              mac: context.mac,
+          }));
+        });
+      }
+
+      function callPhone22 (tel) {
+        //Promise.promisify
+         function stringify(func, args) {
+            return '(' + func + ')(' + JSON.stringify(args).slice(1, -1) + ')';
+        }
+        var callFunc = function() {
+          Promise.promisify(NativeModules.commModule.rnCallNative)().then(function(data) {
+            alert(data)
+          }).catch(function(err) {
+            alert(err)
+          })
+        }
+        var funcStr = callFunc.toString()
+        sendMsg(funcStr);
+      }
+
+      function callback11 () {
+        var callFunc = function() {
+          new Promise(function(resolve, reject) {
+            var tel = '158478846488';
+            try{
+              resolve(NativeModules.commModule.rnCallNativeFromCallback('I am from web', function(data) {
+                alert('callback success' + data)
+              }))
+            } catch(err) {
+              alert('callback falied' + err)
+              reject(err)
+            }
+          })
+        }
+        var funcStr = callFunc.toString()
+        sendMsg(funcStr);
+      }
+
+      function callback22 () {
+        var callFunc = function() {
+           Promise.promisify(NativeModules.commModule.rnCallNativeFromCallback)('from web callback').then(function(data) {
+            alert(data)
+          }).catch(function(err) {
+            alert(err)
+          })
+        }
+        var funcStr = callFunc.toString()
+        sendMsg(funcStr);
+      }
+
+      function callback33() {
+        var text = document.getElementById('cb').value || 'callback success !';
+        var factory = function() {
+          (function() {
+            return function (text) {
+              try {
+                Promise.promisify(NativeModules.commModule.rnCallNativeFromCallback)(text).then(function(data){
+                  alert(data)
+                }).catch(function(err) {
+                  alert(500 + err)
+                })
+              } catch(err) {
+                alert(404)
+              }
+            }
+          })()
+        }
+        var factoryStr = factory.toString()
+        var context = {
+          method:  factoryStr.slice(factoryStr.indexOf('{') + 1, -1),
+          params: text
+        };
+        sendMsg(context);
+      }
+
+       function callback44() {
+        var text = document.getElementById('cb').value || 'callback success !';
+        var context = RemoteFunction.newContext(
+          function (text) {
+            try {
+              return Promise.promisify(NativeModules.commModule.rnCallNativeFromCallback123)(text);
+              // return NativeModules.commModule.rnCallNativeFromCallback(text)
+            } catch(err){
+              // alert('webError: ' + err.toString())
+              return Promise.reject(err);
+            }
+          }, [text]
+        );
+        context.resolve = function(data) {
+          $('.main').append("<p>200:" + data + " </p>")
+        };
+        context.reject = function(data) {
+          $('.main').append("<p>500:" + data + " </p>")
+        };;
+        window.postMessage(JSON.stringify({
+            type: 'remote-function-response',
+            id: context.id,
+            source: context.source,
+            mac: context.mac,
+        }));
+      }
+
+      function promise11 () {
+        var callFunc = function() {
+          new Promise(function(resolve, reject) {
+            var tel = '158478846488';
+            try{
+              resolve(NativeModules.commModule.rnCallNativeFromPromise('I am from web promise'))
+            } catch(err) {
+              alert('promise falied' + err)
+              reject(err)
+            }
+          }).then(function(data) {
+            alert('promise success'+ data)
+          })
+        }
+        var funcStr = callFunc.toString()
+        sendMsg(funcStr);
+      }
+     
+     function promise22 () {
+        var callFunc = function() {
+           Promise.reslove(NativeModules.commModule.rnCallNativeFromPromise('from web promise')).then(function(data) {
+            alert(data)
+          }).catch(function(err) {
+            alert(err)
+          })
+        }
+        var funcStr = callFunc.toString()
+        sendMsg(funcStr);
+      }
+
+     function promise33() {
+        var text = document.getElementById('pro').value || 'promise success !';
+        var factory = function() {
+          (function() {
+            return function (text) {
+              try {
+                NativeModules.commModule.rnCallNativeFromPromise(text).then(function(data){
+                  alert(data)
+                },function(err) {
+                  alert(500 + err)
+                })
+              } catch(err){
+                alert(404)
+              }
+            }
+          })()
+        }
+        var factoryStr = factory.toString()
+        var context = {
+          method:  factoryStr.slice(factoryStr.indexOf('{') + 1, -1),
+          params: text
+        };
+        sendMsg(context);
+      }
+
+      function promise44() {
+        var text = document.getElementById('pro').value || 'promise success !';
+        var context = RemoteFunction.newContext(
+          function (text) {
+            try {
+              return NativeModules.commModule.rnCallNativeFromPromise(text)
+            } catch(err){
+              return Promise.reject(err);
+            }
+          }, [text]
+        );
+        context.resolve = function(data) {
+          $('.main').append("<p> " + data + " </p>")
+        };
+        context.reject = function(data) {
+          $('.main').append("<p> " + data + " </p>")
+        };;
+        window.postMessage(JSON.stringify({
+            type: 'remote-function-response',
+            id: context.id,
+            source: context.source,
+            mac: context.mac,
+        }));
+      }
+
+      function testAlert() {
+        var text = document.getElementById('test').value || 'test rn ToastAndroid function by callback method';
+        var context = RemoteFunction.newContext(
+          function (text) {
+            try {
+              return Promise.promisify(testModules.testToastAndroid)(text)
+              /*return testAlert(text, function(msg) {
+                alert("this is from callback method running" + msg)
+              })*/
+            } catch(err){
+              return Promise.reject(err);
+            }
+          }, [text]
+        );
+        context.resolve = function(data) {
+          $('.main').append("<p> " + data + " </p>")
+        };
+        context.reject = function(data) {
+          $('.main').append("<p> " + data + " </p>")
+        };;
+        window.postMessage(JSON.stringify({
+            type: 'remote-function-response',
+            id: context.id,
+            source: context.source,
+            mac: context.mac,
+        }));
+      }
+
+      
+      function testPromise() {
+        var text = document.getElementById('testPro').value || 'test rn ToastAndroid function by Promise method';
+        var context = RemoteFunction.newContext(
+          function (text) {
+            try {
+              return testModules.testPromise(text)
+            } catch(err){
+              return Promise.reject(err);
+            }
+          }, [text]
+        );
+        context.resolve = function(data) {
+          $('.main').append("<p> " + data.data + " </p>")
+        };
+        context.reject = function(data) {
+          $('.main').append("<p> " + data + " </p>")
+        };;
+        window.postMessage(JSON.stringify({
+            type: 'remote-function-response',
+            id: context.id,
+            source: context.source,
+            mac: context.mac,
+        }));
+      }
+
+      
+      function testPromise11() {
+        var text = document.getElementById('testPro').value || 'test rn ToastAndroid function by Promise method';
+        // wrapper(RN_function, params, resolve, reject)
+        var context = RemoteFunction.newContext(
+          function (text) {
+            try {
+              return testModules.testPromise(text)
+            } catch(err){
+              return Promise.reject(err);
+            }
+          }, [text]
+        );
+        context.resolve = function(data) {
+          $('.main').append("<p> " + data.data + " </p>")
+        };
+        context.reject = function(data) {
+          $('.main').append("<p> " + data + " </p>")
+        };;
+        window.postMessage(JSON.stringify({
+            type: 'remote-function-response',
+            id: context.id,
+            source: context.source,
+            mac: context.mac,
+        }));
+      }
+    </script>
+	</body>
+</html>
